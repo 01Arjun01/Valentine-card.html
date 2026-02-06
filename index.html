@@ -157,6 +157,24 @@ Life is better with you"></textarea>
 </div>
 
 <script>
+const bgm = document.getElementById("bgm");
+let musicStarted = false;
+function startMusic() {
+  if (musicStarted) return;
+
+  musicStarted = true;
+  bgm.volume = 0;
+  bgm.play();
+
+  let volume = 0;
+  const fade = setInterval(() => {
+    volume += 0.02;
+    bgm.volume = Math.min(volume, 0.5);
+    if (volume >= 0.5) clearInterval(fade);
+  }, 120);
+}
+
+
 const params = new URLSearchParams(location.search);
 const hasParams = params.has("msgs");
 
@@ -207,7 +225,7 @@ function typeText(text) {
   }, 30);
 }
 
-document.getElementById("nextBtn").onclick = () => {
+document.getElementById("nextBtn").onclick = () => {startMusic();
   index++;
   if (index < steps.length) {
     typeText(steps[index]);
@@ -255,5 +273,8 @@ function spawnHearts(n) {
 
 function encode(v){return encodeURIComponent(v);}
 </script>
+<audio id="bgm" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
 </body>
 </html>
