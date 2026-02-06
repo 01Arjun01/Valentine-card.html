@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Valentine 💖</title>
+
+<style>
+:root {
+  --accent: #ff4f70;
+  --bg: linear-gradient(135deg, #fff0f5, #ffe4ec);
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Poppins", system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 440px;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.18);
+  overflow: hidden;
+  position: relative;
+}
+
+.header {
+  background: var(--accent);
+  color: white;
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.section {
+  padding: 1.6rem;
+}
+
+.hidden { display: none; }
+
+input, textarea {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+}
+
+button {
+  width: 100%;
+  padding: 0.9rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.message {
+  text-align: center;
+  font-size: 1.2rem;
+  min-height: 4em;
+}
+
+.progress {
+  height: 6px;
+  background: #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.final-screen {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, #ff7a95, #ff4f70);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.final-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.final-buttons button {
+  background: white;
+  color: var(--accent);
+  width: auto;
+}
+
+.heart {
+  position: fixed;
+  bottom: -20px;
+  font-size: 24px;
+  animation: float 4s linear forwards;
+}
+
+@keyframes float {
+  to { transform: translateY(-120vh); opacity: 0; }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Valentine 💖</h1>
+  </div>
+
+  <!-- BUILDER -->
+  <div class="section" id="builder">
+    <input id="from" placeholder="Your name"/>
+    <input id="to" placeholder="Her name"/>
+    <textarea id="msgs" rows="5"
+placeholder="You make me smile
+I love your laugh
+Life is better with you"></textarea>
+    <input type="color" id="color" value="#ff4f70"/>
+    <button onclick="buildLink()">Generate Love Link 🔗</button>
+    <textarea id="link" class="hidden"></textarea>
+  </div>
+
+  <!-- EXPERIENCE -->
+  <div class="section hidden" id="experience">
+    <div class="message" id="message"></div>
+    <div class="progress"><div class="progress-bar" id="progress"></div></div>
+    <button id="nextBtn">Next ❤️</button>
+  </div>
+
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const hasParams = params.has("msgs");
+
+const builder = document.getElementById("builder");
+const experience = document.getElementById("experience");
+
+let steps = [];
+let index = -1;
+
+if (hasParams) {
+  builder.classList.add("hidden");
+  experience.classList.remove("hidden");
+  startExperience();
+}
+
+function buildLink() {
+  const from = document.getElementById("from").value || "Me";
+  const to = document.getElementById("to").value || "You";
+  const msgs = document.getElementById("msgs").value.trim();
+  const color = document.getElementById("color").value;
+
+  if (!msgs) return alert("Add messages");
+
+  const url = `${location.origin}${location.pathname}?from=${encode(from)}&to=${encode(to)}&color=${encode(color)}&msgs=${encode(msgs)}`;
+  const box = document.getElementById("link");
+  box.value = url;
+  box.classList.remove("hidden");
+}
+
+function startExperience() {
+  const from = params.get("from") || "Me";
+  const to = params.get("to") || "You";
+  const msgs = params.get("msgs").split("\n").filter(Boolean);
+  const color = params.get("color") || "#ff4f70";
+
+  document.documentElement.style.setProperty("--accent", color);
+  steps = [...msgs, `Will you be my Valentine, ${to}? 💖`];
+  typeText(`Hey ${to}… ${from} made this for you ❤️`);
+}
+
+function typeText(text) {
+  const el = document.getElementById("message");
+  el.textContent = "";
+  let i = 0;
+  const t = setInterval(() => {
+    el.textContent += text[i++];
+    if (i >= text.length) clearInterval(t);
+  }, 30);
+}
+
+document.getElementById("nextBtn").onclick = () => {
+  index++;
+  if (index < steps.length) {
+    typeText(steps[index]);
+    document.getElementById("progress").style.width =
+      ((index + 1) / steps.length) * 100 + "%";
+    spawnHearts(6);
+  } else {
+    showFinal();
+  }
+};
+
+function showFinal() {
+  const fs = document.createElement("div");
+  fs.className = "final-screen";
+  fs.innerHTML = `
+    <h1>It's you. Always 💘</h1>
+    <p>So… what do you say?</p>
+    <div class="final-buttons">
+      <button onclick="accept()">YES 💖</button>
+      <button onclick="accept()">OF COURSE 😍</button>
+    </div>
+  `;
+  document.querySelector(".container").appendChild(fs);
+}
+
+function accept() {
+  spawnHearts(40);
+  document.querySelector(".final-screen").innerHTML = `
+    <h1>Best decision ever 💞</h1>
+    <p>Happy Valentine’s Day</p>
+  `;
+}
+
+function spawnHearts(n) {
+  for (let i = 0; i < n; i++) {
+    const h = document.createElement("div");
+    h.className = "heart";
+    h.textContent = "❤️";
+    h.style.left = Math.random() * 100 + "vw";
+    h.style.animationDuration = 3 + Math.random() * 2 + "s";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 5000);
+  }
+}
+
+function encode(v){return encodeURIComponent(v);}
+</script>
+</body>
+</html>
