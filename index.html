@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Valentine 💖</title>
+  <title>Valentine Builder 💖</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -18,27 +18,30 @@
       text-align: center;
     }
 
-    .card {
-      background: rgba(0, 0, 0, 0.25);
-      padding: 30px;
+    .box {
+      background: rgba(0,0,0,0.25);
+      padding: 25px;
       border-radius: 20px;
       width: 90%;
-      max-width: 400px;
+      max-width: 420px;
       animation: fadeIn 1s ease;
     }
 
-    h1 {
-      font-size: 26px;
-      margin-bottom: 20px;
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      margin: 8px 0;
+      font-size: 16px;
     }
 
-    p {
-      font-size: 20px;
-      min-height: 60px;
+    textarea {
+      height: 100px;
     }
 
     button {
-      margin-top: 20px;
+      margin-top: 15px;
       padding: 12px 25px;
       border: none;
       border-radius: 30px;
@@ -61,49 +64,97 @@
 
 <body>
 
-  <!-- 🎵 BACKGROUND MUSIC -->
-  <audio id="bgMusic" loop>
-    <source src="music.mp3" type="audio/mpeg">
-  </audio>
+<!-- 🎵 MUSIC -->
+<audio id="bgMusic" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
 
-  <div class="card">
-    <h1 id="title">Hey ❤️</h1>
-    <p id="message">I have something to tell you...</p>
-    <button onclick="nextStep()">Next ❤️</button>
-  </div>
+<div class="box" id="builder">
+  <h2>💖 Valentine Builder</h2>
 
-  <script>
-    const messages = [
-      "I just wanted you to know...",
-      "You make my days brighter ☀️",
-      "You make me smile without trying",
-      "Being with you feels like home 🏡",
-      "And honestly...",
-      "I’m really lucky to have you 💖",
-      "Will you be my Valentine? 💘"
-    ];
+  <input id="from" placeholder="Your name" />
+  <input id="to" placeholder="Partner's name" />
 
-    let step = 0;
-    let musicStarted = false;
+  <textarea id="messages" placeholder="Write messages (one per line)"></textarea>
 
-    function nextStep() {
-      // 🎵 START MUSIC ON FIRST CLICK (REQUIRED FOR MOBILE)
-      const music = document.getElementById("bgMusic");
-      if (!musicStarted) {
-        music.volume = 0.5;
-        music.play().catch(() => {});
-        musicStarted = true;
-      }
+  <button onclick="generateLink()">Generate Love Link ❤️</button>
 
-      // ➡️ SHOW NEXT MESSAGE
-      if (step < messages.length) {
-        document.getElementById("message").innerText = messages[step];
-        step++;
-      } else {
-        document.querySelector("button").style.display = "none";
-      }
+  <p id="link" style="word-break: break-all; margin-top: 10px;"></p>
+</div>
+
+<div class="box" id="player" style="display:none;">
+  <h2 id="title"></h2>
+  <p id="text"></p>
+  <button onclick="next()">Next ❤️</button>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+
+  const from = params.get("from");
+  const to = params.get("to");
+  const msg = params.get("msg");
+
+  const player = document.getElementById("player");
+  const builder = document.getElementById("builder");
+
+  let messages = [];
+  let step = 0;
+  let musicStarted = false;
+
+  if (from && to && msg) {
+    builder.style.display = "none";
+    player.style.display = "block";
+
+    messages = decodeURIComponent(msg).split("|");
+    document.getElementById("title").innerText = `Hey ${to} ❤️`;
+    document.getElementById("text").innerText = messages[0];
+    step = 1;
+  }
+
+  function generateLink() {
+    const fromVal = document.getElementById("from").value.trim();
+    const toVal = document.getElementById("to").value.trim();
+    const msgVal = document.getElementById("messages").value
+      .split("\n")
+      .map(m => m.trim())
+      .filter(Boolean)
+      .join("|");
+
+    if (!fromVal || !toVal || !msgVal) {
+      alert("Please fill everything ❤️");
+      return;
     }
-  </script>
+
+    const url =
+      `${location.origin}${location.pathname}` +
+      `?from=${encodeURIComponent(fromVal)}` +
+      `&to=${encodeURIComponent(toVal)}` +
+      `&msg=${encodeURIComponent(msgVal)}`;
+
+    document.getElementById("link").innerHTML =
+      `💌 Share this link:<br><a style="color:white" href="${url}">${url}</a>`;
+  }
+
+  function next() {
+    const music = document.getElementById("bgMusic");
+
+    if (!musicStarted) {
+      music.volume = 0.5;
+      music.play().catch(() => {});
+      musicStarted = true;
+    }
+
+    if (step < messages.length) {
+      document.getElementById("text").innerText = messages[step];
+      step++;
+    } else {
+      document.getElementById("text").innerHTML =
+        "💥💖💘<br>Happy Valentine’s Day!";
+      document.querySelector("#player button").style.display = "none";
+    }
+  }
+</script>
 
 </body>
 </html>
