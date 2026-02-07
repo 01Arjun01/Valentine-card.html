@@ -2,126 +2,218 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <title>Valentine Builder 💖</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>💖 A Special Message</title>
 
   <style>
     body {
       margin: 0;
-      font-family: system-ui, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #ff758c, #ff7eb3);
       color: white;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
       text-align: center;
     }
-    .card {
+
+    .box {
       background: rgba(0,0,0,0.25);
-      padding: 24px;
-      border-radius: 16px;
-      max-width: 400px;
+      padding: 25px;
+      border-radius: 20px;
       width: 90%;
+      max-width: 420px;
+      animation: fadeIn 1s ease;
+      z-index: 2;
     }
-    input, textarea, button {
+
+    input, textarea {
       width: 100%;
       padding: 10px;
-      margin-top: 10px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: none;
+      margin: 8px 0;
       font-size: 16px;
     }
+
+    textarea { height: 100px; }
+
     button {
-      background: #ff4f70;
+      margin: 10px;
+      padding: 12px 22px;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      background: #ff4d6d;
       color: white;
       cursor: pointer;
+    }
+
+    button:hover { background: #ff2f5e; }
+
+    .choices button {
+      background: #ffb3c6;
+      color: #800020;
       font-weight: bold;
     }
-    #story { min-height: 80px; margin-top: 20px; font-size: 18px; }
-    #nextBtn { display: none; }
-    #share { word-break: break-all; font-size: 14px; margin-top: 10px; }
+
+    .heart {
+      position: fixed;
+      font-size: 24px;
+      animation: floatUp 3s ease forwards;
+      pointer-events: none;
+    }
+
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      animation: confettiFall 3s linear forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes floatUp {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-300px); opacity: 0; }
+    }
+
+    @keyframes confettiFall {
+      from { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+      to { transform: translateY(600px) rotate(720deg); opacity: 0; }
+    }
   </style>
 </head>
+
 <body>
 
-<div class="card" id="builder">
-  <h2>💌 Create Your Love Letter</h2>
-  <input id="from" placeholder="Your name" />
-  <input id="to" placeholder="Her name" />
-  <textarea id="msgs" rows="4" placeholder="Write lines (one per line)"></textarea>
-  <button onclick="generate()">Generate Link 🔗</button>
-  <div id="share"></div>
-</div>
-
-<div class="card" id="viewer" style="display:none;">
-  <h2 id="title"></h2>
-  <div id="story"></div>
-  <button id="nextBtn">Next ❤️</button>
-</div>
-
-<!-- 🎵 MUSIC -->
-<audio id="bgm" loop>
+<audio id="bgMusic" loop>
   <source src="music.mp3" type="audio/mpeg">
 </audio>
+
+<div class="box" id="builder">
+  <h2>💖 Valentine Builder</h2>
+  <input id="from" placeholder="Your name" />
+  <input id="to" placeholder="Partner's name" />
+  <textarea id="messages" placeholder="Messages (one per line)"></textarea>
+  <button onclick="generateLink()">Generate Love Link ❤️</button>
+  <p id="link" style="word-break: break-all;"></p>
+</div>
+
+<div class="box" id="player" style="display:none;">
+  <h2 id="title"></h2>
+  <p id="text"></p>
+  <button id="nextBtn" onclick="next()">Next ❤️</button>
+
+  <div class="choices" id="choices" style="display:none;">
+    <p><strong>Will you be my Valentine? 💘</strong></p>
+    <button onclick="celebrate()">Yes 💖</button>
+    <button onclick="celebrate()">Of course 😍</button>
+  </div>
+</div>
 
 <script>
   const params = new URLSearchParams(location.search);
   const from = params.get("from");
   const to = params.get("to");
-  const msgs = params.get("msgs");
+  const msg = params.get("msg");
 
-  const bgm = document.getElementById("bgm");
+  const builder = document.getElementById("builder");
+  const player = document.getElementById("player");
+
+  let messages = [];
+  let step = 0;
   let musicStarted = false;
 
+  if (from && to && msg) {
+    builder.style.display = "none";
+    player.style.display = "block";
+
+    messages = decodeURIComponent(msg).split("|");
+    document.getElementById("title").innerText = `Hey ${to} ❤️`;
+    document.getElementById("text").innerText = messages[0];
+    step = 1;
+  }
+
+  function generateLink() {
+    const f = fromInput();
+    const t = toInput();
+    const m = messagesInput();
+
+    if (!f || !t || !m) {
+      alert("Please fill everything ❤️");
+      return;
+    }
+
+    const url =
+      `${location.origin}${location.pathname}` +
+      `?from=${encodeURIComponent(f)}` +
+      `&to=${encodeURIComponent(t)}` +
+      `&msg=${encodeURIComponent(m)}`;
+
+    document.getElementById("link").innerHTML =
+      `💌 Share this link:<br><a style="color:white" href="${url}">${url}</a>`;
+  }
+
+  function next() {
+    startMusic();
+
+    if (step < messages.length) {
+      document.getElementById("text").innerText = messages[step];
+      step++;
+    } else {
+      document.getElementById("text").style.display = "none";
+      document.getElementById("nextBtn").style.display = "none";
+      document.getElementById("choices").style.display = "block";
+    }
+  }
+
   function startMusic() {
-    if (musicStarted) return;
-    musicStarted = true;
-    bgm.volume = 0;
-    bgm.play();
-
-    let v = 0;
-    const fade = setInterval(() => {
-      v += 0.02;
-      bgm.volume = Math.min(v, 0.5);
-      if (v >= 0.5) clearInterval(fade);
-    }, 120);
+    const music = document.getElementById("bgMusic");
+    if (!musicStarted) {
+      music.volume = 0.5;
+      music.play().catch(() => {});
+      musicStarted = true;
+    }
   }
 
-  if (from && to && msgs) {
-    document.getElementById("builder").style.display = "none";
-    document.getElementById("viewer").style.display = "block";
+  function celebrate() {
+    for (let i = 0; i < 30; i++) createHeart();
+    for (let i = 0; i < 40; i++) createConfetti();
 
-    const steps = msgs.split("\n");
-    let i = 0;
-
-    document.getElementById("title").innerText = `Dear ${to} 💖`;
-    document.getElementById("story").innerText = steps[0];
-    document.getElementById("nextBtn").style.display = "block";
-
-    document.getElementById("nextBtn").onclick = () => {
-      startMusic();
-      i++;
-      if (i < steps.length) {
-        document.getElementById("story").innerText = steps[i];
-      } else {
-        document.getElementById("story").innerHTML =
-          `It’s always been you.<br><br>Love,<br><b>${from}</b> 💘`;
-        document.getElementById("nextBtn").style.display = "none";
-      }
-    };
+    document.getElementById("choices").innerHTML =
+      "<h2>💖💥 Happy Valentine’s Day 💥💖</h2>";
   }
 
-  function generate() {
-    const f = document.getElementById("from").value;
-    const t = document.getElementById("to").value;
-    const m = document.getElementById("msgs").value;
+  function createHeart() {
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.innerText = "💖";
+    heart.style.left = Math.random() * 100 + "vw";
+    heart.style.bottom = "0px";
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 3000);
+  }
 
-    const link =
-      location.origin + location.pathname +
-      `?from=${encodeURIComponent(f)}&to=${encodeURIComponent(t)}&msgs=${encodeURIComponent(m)}`;
+  function createConfetti() {
+    const conf = document.createElement("div");
+    conf.className = "confetti";
+    conf.style.left = Math.random() * 100 + "vw";
+    conf.style.background = ["#ff4d6d","#fff","#ffb3c6"][Math.floor(Math.random()*3)];
+    document.body.appendChild(conf);
+    setTimeout(() => conf.remove(), 3000);
+  }
 
-    document.getElementById("share").innerText = link;
+  function fromInput() { return document.getElementById("from").value.trim(); }
+  function toInput() { return document.getElementById("to").value.trim(); }
+  function messagesInput() {
+    return document.getElementById("messages").value
+      .split("\n").map(m => m.trim()).filter(Boolean).join("|");
   }
 </script>
 
