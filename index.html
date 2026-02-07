@@ -128,9 +128,6 @@ button {
 </head>
 
 <body>
-  <audio id="bgMusic" loop>
-  <source src="music.mp3" type="audio/mpeg">
-</audio>
 
 <div class="container">
 
@@ -161,13 +158,6 @@ Life is better with you"></textarea>
 </div>
 
 <script>
-  function nextbtn() {
-  const music = document.getElementById("bgMusic");
-
-  if (music && music.paused) {
-    music.volume = 0.5;
-    music.play().catch(() => {});
-  }
 
   // ⬇️ KEEP YOUR EXISTING CODE BELOW THIS LINE
 }
